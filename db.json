@@ -68,5 +68,12 @@
     "email": "oleksandr@example.com",
     "age": 33,
     "gender": "чоловік"
+  },
+  {
+    "id": 11,
+    "name": "Іван",
+    "email": "ivan@example.com",
+    "age": 30,
+    "gender": "чоловік"
   }
 ]

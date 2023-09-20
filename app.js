@@ -1,24 +1,68 @@
-
-
 const fs = require('fs');
+const dbFile = 'db.json';
 
-const users = [
-    { id: 1, name: 'Іван', email: 'ivan@example.com', age: 30, gender: 'чоловік' },
-    { id: 2, name: 'Марія', email: 'maria@example.com', age: 25, gender: 'жінка' },
-    { id: 3, name: 'Петро', email: 'petro@example.com', age: 35, gender: 'чоловік' },
-    { id: 4, name: 'Ольга', email: 'olga@example.com', age: 28, gender: 'жінка' },
-    { id: 5, name: 'Андрій', email: 'andriy@example.com', age: 32, gender: 'чоловік' },
-    { id: 6, name: 'Наталія', email: 'natalia@example.com', age: 27, gender: 'жінка' },
-    { id: 7, name: 'Максим', email: 'maxim@example.com', age: 29, gender: 'чоловік' },
-    { id: 8, name: 'Софія', email: 'sofia@example.com', age: 26, gender: 'жінка' },
-    { id: 9, name: 'Анна', email: 'anna@example.com', age: 31, gender: 'жінка' },
-    { id: 10, name: 'Олександр', email: 'oleksandr@example.com', age: 33, gender: 'чоловік' }
-];
 
-// Перетворюємо об'єкт `users` в рядок JSON
-const usersJSON = JSON.stringify(users, null, 2);
+function validateUser(user) {
+    if (user.name.length < 3) {
+        throw new Error('Імя користувача повинно бути більше 3 символів.');
+    }
+    if (user.age < 0) {
+        throw new Error('Вік користувача повинен бути не менше нуля.');
+    }
+}
 
-// Записуємо рядок JSON у файл db.json
-fs.writeFileSync('db.json', usersJSON);
+// Функція для отримання масиву користувачів з файлу db.json
+function getUsersFromDB() {
+    if (fs.existsSync(dbFile)) {
+        const data = fs.readFileSync(dbFile, 'utf-8');
+        return JSON.parse(data);
+    } else {
+        return [];
+    }
+}
 
-console.log('Дані успішно збережено у файл db.json');
+// Функція для збереження масиву користувачів у файл db.json
+function saveUsersToDB(users) {
+    fs.writeFileSync(dbFile, JSON.stringify(users, null, 2));
+}
+
+// Функція для додавання нового користувача до бази даних
+function addUser(newUser) {
+    try {
+        // Валідуємо ім'я та вік користувача
+        validateUser(newUser);
+
+        // Отримуємо поточний список користувачів
+        const users = getUsersFromDB();
+
+        //  максимальне значення ідентифікатора серед існуючих користувачів
+        const maxId = users.reduce((max, user) => (user.id > max ? user.id : max), 0);
+
+        // Створюємо нового користувача з ідентифікатором, розташованим спочатку
+        const userWithId = {
+            id: maxId + 1,
+            ...newUser // Копіюємо всі інші властивості користувача
+        };
+
+        // Додаємо нового користувача до списку
+        users.push(userWithId);
+
+        // Зберігаємо оновлений список користувачів у файл db.json
+        saveUsersToDB(users);
+
+        console.log('Нового користувача додано до бази даних.');
+    } catch (error) {
+        console.error('Помилка при додаванні користувача:', error.message);
+    }
+}
+
+// Приклад використання функції addUser для додавання нового користувача
+const newUser = {
+    name: 'Іван',
+    email: 'ivan@example.com',
+    age: 30,
+    gender: 'чоловік',
+};
+
+addUser(newUser);
+
